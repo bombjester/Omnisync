@@ -1,0 +1,169 @@
+<html ng-app="app">
+<head>
+    <title>Project</title>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <style>
+        ul {
+            text-indent: 35px;
+        }
+
+
+        .green {
+            background-color: green !important;
+        }
+
+        .blue {
+            background-color: #546e7a !important;
+        }
+        .loader{
+            
+            width: 50% !important;
+            padding-left: 10px;
+            padding-right: 10px;
+            
+        }
+        .pointer:hover{
+            cursor: pointer;
+        }
+        .brand-logo{
+            text-align: center !important;
+        }
+        .right {
+            width: 50%;
+            right: 0;
+            background-color: white;
+            position: fixed;
+            margin-top: 3px;
+        }
+    </style>
+    <script src="https://code.jquery.com/jquery-2.2.2.min.js" integrity="sha256-36cp2Co+/62rEAAYHLmRCPIych47CvdM+uTBJwSzWjI=" crossorigin="anonymous"></script>
+    <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.3.5/angular.min.js"></script>
+    <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.3.5/angular-route.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+    <script>
+        var angular = angular.module('app', ['ngRoute']);
+
+        angular.controller("controller", function ($scope, datafactory) {
+
+            $scope.data = [];
+            $scope.array = [];
+            $scope.text = "Favorite";
+            $scope.loading = true;
+            $scope.saved = false;
+
+            $scope.favorite = function (index) {
+
+                if ($scope[("selected" + index).toString()]) {
+                    $scope[("selected" + index).toString()] = false;
+                    for (x in $scope.array) {
+                        if ($scope.data[index].solicitation_title == $scope.array[x].solicitation_title) {
+
+                            $scope.array.splice(x, 1);
+                        }
+
+                    }
+                }
+                else {
+                    $scope[("selected" + index).toString()] = true;
+                    $scope.array.push($scope.data[index]);
+                }
+
+               
+            }
+            $scope.writedata = function () {
+               
+                datafactory.writedata($scope.array).success(function (result) {
+
+                    if (result == "Saved") {
+                        $scope.saved = true;
+                    }                   
+                })
+            }
+
+            datafactory.getdata().success(function (result) {
+                 $scope.loading = false;
+                $scope.data = result;
+
+            })
+        })
+
+        angular.factory("datafactory", function ($http) {
+            var data = [];
+
+            functions = {};
+
+            functions.getdata = function () {
+                return $http.get('/getapi').success(function (result) {
+                    data = result;
+                   
+                });
+            }
+            functions.writedata = function (data) {
+                console.log(data);
+                 return $http.post('/writefile', data).success(function (result) {
+                     console.log(result);
+
+                });
+            }
+            return functions;
+        })
+    </script>
+</head>
+<body ng-controller="controller">
+
+    <nav>
+        <div class="nav-wrapper">
+            <a class="brand-logo" style="text-indent: 60% !important">Project</a>
+        </div>
+     </nav>
+           
+            <div class="right">
+                <ul class="collection with-header">
+                    <li class="collection-header"><h4 style="text-align: center">Favorites</h4></li>
+                    <li ng-repeat="x in array" class="collection-item"><div>{{x.solicitation_title}}</div></li>
+                    <li ng-if="!saved" class="collection-item"><div style="float: right;">Save File <a class="pointer" ng-click="writedata()"><i class="material-icons">save</i></a> </div></li>
+                    <li ng-if="saved" class="collection-item"><div style="color: green">Saved!</div></li>
+                </ul>
+            </div>
+            <div ng-if="loading" class="progress loader">
+                <div class="indeterminate"></div>
+            </div>
+
+            <div class="row" ng-repeat='x in data'>
+                <div class="col s12 m6">
+                    <div class="card blue" ng-class="{green: selected{{$index}} }">
+                        <div class="card-content white-text">
+                            <span class="card-title">{{x.solicitation_title}}</span>
+                            <p>Solicitation Number: {{x.solicitation_number}}</p>
+                            <p>Program: {{x.program}}</p>
+                            <p>SBIR: {{x.SBIR}}</p>
+                            <p>Phase: {{x.phase}}</p>
+                            <p>Agency: {{x.agency}}</p>
+                            <p>Branch: {{x.branch}}</p>
+                            <p>Solicitation Year: {{x.solicitation_year}}</p>
+                            <p>Release Date: {{x.release_date}}</p>
+                            <p>Open Date: {{x.open_date}}</p>
+                            <p>Close Date: {{x.close_date}}</p>
+                            <p>Application Due Date: <span ng-repeat="c in x.application_due_date">{{c}}, </span></p>
+                            <p>Occurrence Number: {{x.occurrence_number}}</p>
+                            <p>Solicitation Link: <a href="{{x.sbir_solicitation_link}}">{{x.sbir_solicitation_link}}</a></p>
+                            <p>Solicitation Agency URL: <a href="{{x.solicitation_agency_url}}">{{x.solicitation_agency_url}}</a></p>
+                            <p>Current Status: {{x.current_status}}</p>
+                            
+
+                        </div>
+                        
+                        <div ng-click="favorite($index)" class="card-action">                        
+                            <a ng-if="text">Toggle Favorite</a>
+                        </div>                     
+                    </div>
+                    
+
+                </div>
+                
+
+            </div>
+
+</body>
+</html>
