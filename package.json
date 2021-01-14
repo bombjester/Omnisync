@@ -1,0 +1,12 @@
+{
+  "name": "Omnisync project",
+  "description": "Coding Test",
+  "dependencies": {
+    "body-parser": "latest",
+    "express": "latest"
+
+  },
+  "engines": {
+    "node": "latest"
+  }
+}
